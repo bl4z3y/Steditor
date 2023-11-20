@@ -6,8 +6,9 @@ WIKI:
     +> Chaves de criptografia sáo SHA-512, e Hashes são SHA-256
 
 TODOS:
-  >Timestamps
-  >Editar arquivos ao invés de sobrescrever
+    >Timestamps
+    >Editar arquivos ao invés de sobrescrever
+    >Corrigir a 
 """
 
 
@@ -29,8 +30,8 @@ def edit(file_name: str):
             if linha.endswith(";END"):
                 linhas.pop()
                 break
-        for l in linhas:
-            f.write(l + "\n")
+        # for l in linhas:
+            # f.write(l + "\n")
     return linhas
 
 
@@ -39,16 +40,19 @@ def main():
     fname = fname + ".txt"
     try:
         with open(fname, 'r') as f:
-            if f.readline().startswith("--stcrmk--"):
+            if f.readline().startswith("--stcrcts--"):
                 chave = input("Arquivo protegido por criptografia, digite a chave de acesso: ")
                 chave_real: str = wra_file(fname.replace(".txt", "") + ".stkey", "r1")
                 if hashlib.sha512(chave.encode()).hexdigest() == chave_real:
-                    for l in wra_file(fname, "r"):
-                        print(l)
-                        return
+                    l_cr = wra_file(fname, "r")
+                    print(l_cr)
+                    for l in l_cr:
+                        if l != "--stcrcts--":
+                            print(l[::-1], end='')
 
+        #ADICIONAR AQUI O CÓDIGO PARA EDITAR ARQUIVOS E NÃO CRIAR NOVOS
     except FileNotFoundError:
-        linhas: list = edit(fname)
+        linhas_arq: list = edit(fname)
         o = input("Você quer trancar o arquivo? (s/n) ")
         if o.lower() == "s":
             m = int(input("Escolha o método: \n1-Criptografia com chave\n2-Hash (SHA-256)\n=>"))
@@ -57,14 +61,11 @@ def main():
                 with open(fname.replace(".txt", "") + ".stkey", "w") as f:
                     f.write(hashlib.sha512(chave.encode()).hexdigest())
                 
-                with open(fname, "w") as f:
+                with open(fname, "a") as f:
                     allines: list = wra_file(fname, "r")
-                    f.write("--stcrmk--" + "\n")
-                    for linha in allines:
-                        if not linha.endswith(";END"):
-                            f.write(linha[::-1])
-                        else:
-                            f.write(linha.replace(";END", ""))
+                    f.write("--stcrcts--" + "\n")
+                    for linha in linhas_arq:
+                        f.write(linha[::-1] + "\n")
 
             elif m == 2:
                 linhas_str = ""
@@ -75,6 +76,10 @@ def main():
                         f.write(hashed_linhas)
             else:
                 return
+        else:
+            with open(fname, "w") as f:
+                for l in linhas_arq:
+                    f.write(l + "\n")
 
 
 main()
