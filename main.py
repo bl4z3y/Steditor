@@ -1,4 +1,5 @@
 import hashlib
+import os
 
 """
 WIKI:
@@ -8,7 +9,7 @@ WIKI:
 TODOS:
     >Timestamps
     >Editar arquivos ao invés de sobrescrever
-    >Corrigir a 
+    >Corrigir a escrita 
 """
 
 
@@ -22,30 +23,26 @@ def wra_file(filename: str, mode: str):
 
 def edit(file_name: str):
     linhas = []
-
-    with open(file_name, "w") as f:
-        while True:
-            linha = input()
-            linhas.append(linha)
-            if linha.endswith(";END"):
-                linhas.pop()
-                break
-        # for l in linhas:
-            # f.write(l + "\n")
+    while True:
+        linha = input()
+        linhas.append(linha)
+        if linha.endswith(";END"):
+            linhas.pop()
+            break
     return linhas
 
 
 def main():
     fname = input("Digite o nome do arquivo: ")
+    KFILE = fname + ".stkey"
     fname = fname + ".txt"
     try:
         with open(fname, 'r') as f:
             if f.readline().startswith("--stcrcts--"):
                 chave = input("Arquivo protegido por criptografia, digite a chave de acesso: ")
-                chave_real: str = wra_file(fname.replace(".txt", "") + ".stkey", "r1")
+                chave_real: str = wra_file(KFILE, "r1")
                 if hashlib.sha512(chave.encode()).hexdigest() == chave_real:
                     l_cr = wra_file(fname, "r")
-                    print(l_cr)
                     for l in l_cr:
                         if l != "--stcrcts--":
                             print(l[::-1], end='')
@@ -58,9 +55,10 @@ def main():
             m = int(input("Escolha o método: \n1-Criptografia com chave\n2-Hash (SHA-256)\n=>"))
             if m == 1:
                 chave = input("Digite a chave: ")
-                with open(fname.replace(".txt", "") + ".stkey", "w") as f:
+                with open(KFILE, "w") as f:
                     f.write(hashlib.sha512(chave.encode()).hexdigest())
-                
+                    path_kfile = str(os.getcwd()) + "/" + KFILE
+                    os.system(f"chmod 444 {path_kfile}")
                 with open(fname, "a") as f:
                     allines: list = wra_file(fname, "r")
                     f.write("--stcrcts--" + "\n")
