@@ -1,5 +1,4 @@
-import hashlib
-import os
+import hashlib, os, cesar
 
 """
 WIKI:
@@ -21,7 +20,7 @@ def wra_file(filename: str, mode: str):
         with open(filename, 'r') as f:
             return f.readline()
 
-def edit(file_name: str):
+def edit():
     linhas = []
     while True:
         linha = input()
@@ -49,7 +48,7 @@ def main():
 
         #ADICIONAR AQUI O CÓDIGO PARA EDITAR ARQUIVOS E NÃO CRIAR NOVOS
     except FileNotFoundError:
-        linhas_arq: list = edit(fname)
+        linhas_arq: list = edit()
         o = input("Você quer trancar o arquivo? (s/n) ")
         if o.lower() == "s":
             m = int(input("Escolha o método: \n1-Criptografia com chave\n2-Hash (SHA-256)\n=>"))
@@ -57,13 +56,23 @@ def main():
                 chave = input("Digite a chave: ")
                 with open(KFILE, "w") as f:
                     f.write(hashlib.sha512(chave.encode()).hexdigest())
-                    path_kfile = str(os.getcwd()) + "/" + KFILE
+                    path_kfile: str = str(os.getcwd()) + "/" + KFILE
                     os.system(f"chmod 444 {path_kfile}")
-                with open(fname, "a") as f:
-                    allines: list = wra_file(fname, "r")
-                    f.write("--stcrcts--" + "\n")
-                    for linha in linhas_arq:
-                        f.write(linha[::-1] + "\n")
+                m = input("Qual tipo de criptografia? \n1-Inverter tudo\n2-Cifra de césar\n=>")
+                if m == '1':
+                    with open(fname, "a") as f:
+                        allines: list = wra_file(fname, "r")
+                        f.write("--stcrcts--" + "\n")
+                        for linha in linhas_arq:
+                            f.write(linha[::-1] + "\n")
+                elif m == '2':
+                    s = int(input("Digite o deslocamento: "))
+                    with open(fname, "a") as f:
+                        allines: list = wra_file(fname, "r")
+                        f.write("--stcrcts--" + "\n")
+                        for i in range(len(allines)):
+                            linha = cesar.shiftPhrase(allines[i], s)
+                            f.write(linha + "\n")
 
             elif m == 2:
                 linhas_str = ""
